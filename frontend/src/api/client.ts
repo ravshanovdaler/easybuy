@@ -16,9 +16,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-retry auth on 401
+// Reject HTML responses (occurs when frontend SPA redirects missing API endpoints to index.html)
 api.interceptors.response.use(
-  (r) => r,
+  (response) => {
+    const contentType = String(response.headers?.['content-type'] || '');
+    if (typeof response.data === 'string' && contentType.includes('text/html')) {
+      return Promise.reject(
+        new Error(`API returned HTML instead of JSON. Ensure VITE_API_URL is configured correctly. (Current: ${BASE_URL})`)
+      );
+    }
+    return response;
+  },
   async (error) => {
     if (error.response?.status === 401) {
       // Re-authenticate with Telegram initData

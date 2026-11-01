@@ -39,7 +39,10 @@ export const useStore = create<AppStore>((set, get) => ({
   // Cart
   cartItems: [],
   cartCount: 0,
-  setCart: (items) => set({ cartItems: items, cartCount: items.reduce((s, i) => s + i.quantity, 0) }),
+  setCart: (items) => {
+    const list = Array.isArray(items) ? items : [];
+    set({ cartItems: list, cartCount: list.reduce((s, i) => s + i.quantity, 0) });
+  },
 
   // Language
   lang: localStorage.getItem('lang') || 'ru',

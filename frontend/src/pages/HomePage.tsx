@@ -30,12 +30,12 @@ export default function HomePage() {
     (window as any)._searchTimer = setTimeout(() => setDebouncedSearch(val), 400);
   }, []);
 
-  const { data: categories = [] } = useQuery({
+  const { data: rawCategories, isError: catError } = useQuery({
     queryKey: ['categories'],
     queryFn: catalogApi.getCategories,
   });
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: rawProducts, isLoading, isError: prodError, error } = useQuery({
     queryKey: ['products', selectedCat, debouncedSearch],
     queryFn: () =>
       catalogApi.getProducts({
@@ -43,6 +43,10 @@ export default function HomePage() {
         search: debouncedSearch || undefined,
       }),
   });
+
+  const categories = Array.isArray(rawCategories) ? rawCategories : [];
+  const products = Array.isArray(rawProducts) ? rawProducts : [];
+  const isApiError = catError || prodError;
 
   return (
     <div className="fade-in">
@@ -57,6 +61,23 @@ export default function HomePage() {
           How it works ❓
         </button>
       </div>
+
+      {isApiError && (
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.12)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          margin: '0 16px 16px',
+          color: '#f87171',
+          fontSize: '13px'
+        }}>
+          <strong>⚠️ Backend Not Connected</strong>
+          <p style={{ margin: '4px 0 0', opacity: 0.85 }}>
+            {(error as any)?.message || 'Unable to connect to the backend API. Please ensure your PythonAnywhere server is running and VITE_API_URL is configured.'}
+          </p>
+        </div>
+      )}
 
       {/* Search */}
       <div className="search-bar">
@@ -131,7 +152,7 @@ export default function HomePage() {
             ))}
       </div>
 
-      {!isLoading && products.length === 0 && (
+      {!isLoading && !isApiError && products.length === 0 && (
         <div className="empty-state">
           <div className="empty-state__icon">🔍</div>
           <div className="empty-state__title">No products found</div>

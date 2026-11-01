@@ -24,11 +24,13 @@ const STATUS_ICONS: Record<string, string> = {
 export default function HistoryPage() {
   const navigate = useNavigate();
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: rawOrders, isLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: () => ordersApi.getOrders(),
     refetchInterval: 30_000,
   });
+
+  const orders = Array.isArray(rawOrders) ? rawOrders : [];
 
   return (
     <div className="fade-in">
