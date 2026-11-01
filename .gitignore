@@ -1,0 +1,62 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+backend/easybuy.db
+
+# Uploaded media (keep folder, ignore files)
+backend/uploads/products/*
+backend/uploads/payment_proofs/*
+backend/uploads/qr_codes/*
+!backend/uploads/products/.gitkeep
+!backend/uploads/payment_proofs/.gitkeep
+!backend/uploads/qr_codes/.gitkeep
+
+# IDEs & System
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

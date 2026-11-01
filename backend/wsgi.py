@@ -1,0 +1,17 @@
+"""
+PythonAnywhere WSGI entry point.
+In PythonAnywhere dashboard → WSGI configuration file, point to this.
+"""
+import sys
+import os
+
+# Add project root to path
+project_home = '/home/yourusername/easybuy/backend'
+if project_home not in sys.path:
+    sys.path.insert(0, project_home)
+
+# Load .env
+from dotenv import load_dotenv
+load_dotenv(os.path.join(project_home, '.env'))
+
+from app.main import app as application
