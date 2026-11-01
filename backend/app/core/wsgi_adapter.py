@@ -79,6 +79,16 @@ def make_sync_wsgi_app(asgi_app):
         # 6. Return WSGI response
         from http.client import responses
         status_msg = f"{response_status[0]} {responses.get(response_status[0], 'OK')}"
+
+        # Guarantee CORS headers for netlify, telegram, and localhost
+        origin = environ.get("HTTP_ORIGIN", "")
+        if origin and not any(k.lower() == "access-control-allow-origin" for k, _ in response_headers):
+            if "netlify.app" in origin or "telegram.org" in origin or "localhost" in origin:
+                response_headers.append(("Access-Control-Allow-Origin", origin))
+                response_headers.append(("Access-Control-Allow-Credentials", "true"))
+                response_headers.append(("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS"))
+                response_headers.append(("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With"))
+
         start_response(status_msg, response_headers)
         return response_body
 

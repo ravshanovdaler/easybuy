@@ -80,6 +80,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://easybuydaler.netlify.app",
         "https://web.telegram.org",
         "https://oauth.telegram.org",
         "http://localhost:5173",
