@@ -16,7 +16,7 @@ if project_home not in sys.path:
 from dotenv import load_dotenv
 load_dotenv(os.path.join(project_home, '.env'))
 
-from a2wsgi import ASGIMiddleware
+from app.core.wsgi_adapter import make_sync_wsgi_app
 from app.main import app
 
-application = ASGIMiddleware(app)
+application = make_sync_wsgi_app(app)
