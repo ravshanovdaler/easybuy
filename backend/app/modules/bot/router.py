@@ -66,7 +66,7 @@ async def bot_webhook(request: Request, db: Session = Depends(get_db)):
         chat_id = msg["chat"]["id"]
 
         if text.startswith("/start"):
-            mini_app_url = f"{settings.BASE_URL.replace('/api', '')}"
+            mini_app_url = settings.FRONTEND_URL
             deep_link = text.replace("/start", "").strip()
 
             keyboard = {

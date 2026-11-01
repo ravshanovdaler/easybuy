@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # Storage
     UPLOAD_DIR: str = "uploads"
     BASE_URL: str = "http://localhost:8000"
+    FRONTEND_URL: str = "https://easybuydaler.netlify.app"
 
     # App
     APP_NAME: str = "EasyBuy"
