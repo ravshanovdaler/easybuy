@@ -80,7 +80,9 @@ if project_home not in sys.path:
 os.environ['HOME'] = project_home
 from dotenv import load_dotenv
 load_dotenv(os.path.join(project_home, '.env'))
-from app.main import app as application
+from a2wsgi import ASGIMiddleware
+from app.main import app
+application = ASGIMiddleware(app)
 ```
 3. Under **Virtualenv**, set: `/home/yourusername/easybuy/backend/venv`
 4. Under **Static files**:
