@@ -64,20 +64,14 @@ def seed_initial_data():
         db.close()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    create_tables()
-    seed_initial_data()
-    yield
-    # Shutdown (nothing to clean up for sync setup)
-
+# Initialize tables and default seed data synchronously on startup (avoids ASGI lifespan deadlock under WSGI)
+create_tables()
+seed_initial_data()
 
 app = FastAPI(
     title="EasyBuy API",
     description="Telegram Mini App store for Chinese products",
     version="1.0.0",
-    lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )

@@ -7,6 +7,8 @@ import os
 
 # Add project root to path
 project_home = '/home/yourusername/easybuy/backend'
+if os.path.exists(project_home):
+    os.chdir(project_home)
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
