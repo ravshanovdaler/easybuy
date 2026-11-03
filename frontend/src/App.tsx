@@ -27,6 +27,8 @@ function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const cartCount = useStore((s) => s.cartCount);
+  const lang = useStore((s) => s.lang);
+  const t = useStore((s) => s.t);
 
   const noNav = ['/how-it-works', '/product/', '/payment/', '/order/', '/admin'].some(
     (p) => location.pathname.startsWith(p)
@@ -34,10 +36,10 @@ function BottomNav() {
   if (noNav) return null;
 
   const tabs = [
-    { path: '/', icon: '🏠', label: 'Home' },
-    { path: '/cart', icon: '🛒', label: 'Cart', badge: cartCount },
-    { path: '/history', icon: '📦', label: 'Orders' },
-    { path: '/settings', icon: '⚙️', label: 'Settings' },
+    { path: '/', icon: '🏠', label: t('nav_home') },
+    { path: '/cart', icon: '🛒', label: t('nav_cart'), badge: cartCount },
+    { path: '/history', icon: '📦', label: t('nav_orders') },
+    { path: '/settings', icon: '⚙️', label: t('nav_settings') },
   ];
 
   return (

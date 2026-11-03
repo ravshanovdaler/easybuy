@@ -146,4 +146,14 @@ export const adminApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then((r) => r.data);
   },
+  getCategories: () => api.get('/admin/categories').then((r) => r.data),
+  createCategory: (data: Record<string, unknown>) =>
+    api.post('/admin/categories', data).then((r) => r.data),
+  updateCategory: (id: number, data: Record<string, unknown>) =>
+    api.patch(`/admin/categories/${id}`, data).then((r) => r.data),
+  deleteCategory: (id: number) => api.delete(`/admin/categories/${id}`).then((r) => r.data),
+  getUsers: (params?: { search?: string; page?: number; limit?: number }) =>
+    api.get('/admin/users', { params }).then((r) => r.data),
+  updateUser: (id: number, data: { is_blocked?: boolean; internal_note?: string }) =>
+    api.patch(`/admin/users/${id}`, data).then((r) => r.data),
 };

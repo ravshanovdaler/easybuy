@@ -6,6 +6,7 @@ import { useStore } from '../store';
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const lang = useStore((s) => s.lang);
   const t = useStore((s) => s.t);
   const setCart = useStore((s) => s.setCart);
   const addToast = useStore((s) => s.addToast);
@@ -57,12 +58,12 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <div className="fade-in">
-        <div className="page-header"><span className="page-title">🛒 Cart</span></div>
+        <div className="page-header"><span className="page-title">{t('cart_title')}</span></div>
         <div className="empty-state">
           <div className="empty-state__icon">🛒</div>
-          <div className="empty-state__title">Your cart is empty</div>
-          <div className="empty-state__desc">Browse products and add them here</div>
-          <button className="btn btn-primary" onClick={() => navigate('/')}>Browse Products</button>
+          <div className="empty-state__title">{t('empty_cart')}</div>
+          <div className="empty-state__desc">{t('try_another_search')}</div>
+          <button className="btn btn-primary" onClick={() => navigate('/')}>{t('browse_catalog')}</button>
         </div>
       </div>
     );
@@ -71,9 +72,9 @@ export default function CartPage() {
   return (
     <div className="fade-in" style={{ paddingBottom: 100 }}>
       <div className="page-header">
-        <span className="page-title">🛒 Cart ({cartItems.length})</span>
+        <span className="page-title">{t('cart_title')} ({cartItems.length})</span>
         {step === 'checkout' && (
-          <button className="btn btn-sm btn-secondary" onClick={() => setStep('cart')}>← Back</button>
+          <button className="btn btn-sm btn-secondary" onClick={() => setStep('cart')}>{t('back')}</button>
         )}
       </div>
 
@@ -109,10 +110,10 @@ export default function CartPage() {
             {/* Totals */}
             <div className="totals" style={{ marginTop: 16 }}>
               <div className="total-row">
-                <span>Subtotal</span><span>${subtotal.toFixed(2)}</span>
+                <span>{t('subtotal')}</span><span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="total-row grand">
-                <span>Estimated Total</span>
+                <span>{t('total')}</span>
                 <span className="amount">${subtotal.toFixed(2)}</span>
               </div>
             </div>
@@ -120,18 +121,18 @@ export default function CartPage() {
         ) : (
           <>
             {/* Checkout Step */}
-            <div className="section-title" style={{ marginBottom: 12 }}>Select Address</div>
+            <div className="section-title" style={{ marginBottom: 12 }}>{t('select_address')}</div>
             {addresses.length === 0 ? (
               <div
                 className="card"
                 style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14 }}
               >
-                No saved addresses.{' '}
+                {t('add_address_first')}{' '}
                 <span
                   style={{ color: 'var(--accent-light)', cursor: 'pointer' }}
                   onClick={() => navigate('/settings')}
                 >
-                  Add one in Settings
+                  ({t('nav_settings')})
                 </span>
               </div>
             ) : (
@@ -155,7 +156,7 @@ export default function CartPage() {
               ))
             )}
 
-            <div className="section-title" style={{ marginBottom: 12, marginTop: 20 }}>Payment Method</div>
+            <div className="section-title" style={{ marginBottom: 12, marginTop: 20 }}>{t('select_payment_method')}</div>
             {methods.map((m: any) => (
               <div
                 key={m.id}
@@ -176,10 +177,10 @@ export default function CartPage() {
 
             {/* Order summary */}
             <div className="card" style={{ marginTop: 16 }}>
-              <div className="section-title" style={{ marginBottom: 10 }}>Order Summary</div>
-              <div className="total-row"><span>Items</span><span>{cartItems.length}</span></div>
+              <div className="section-title" style={{ marginBottom: 10 }}>{t('orders_title')}</div>
+              <div className="total-row"><span>{t('subtotal')}</span><span>${subtotal.toFixed(2)}</span></div>
               <div className="total-row grand">
-                <span>Total</span><span className="amount">${subtotal.toFixed(2)}</span>
+                <span>{t('total')}</span><span className="amount">${subtotal.toFixed(2)}</span>
               </div>
             </div>
           </>
@@ -198,7 +199,7 @@ export default function CartPage() {
       >
         {step === 'cart' ? (
           <button className="btn btn-primary btn-full" onClick={() => setStep('checkout')}>
-            Checkout — ${subtotal.toFixed(2)} →
+            {t('checkout')} — ${subtotal.toFixed(2)} →
           </button>
         ) : (
           <button
@@ -209,7 +210,7 @@ export default function CartPage() {
             {checkoutMutation.isPending ? (
               <span className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
             ) : (
-              '✅ Place Order'
+              `✅ ${t('confirm_order')}`
             )}
           </button>
         )}

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from pydantic import BaseModel
+from sqlalchemy import cast, String
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -246,6 +247,7 @@ class ProductIn(BaseModel):
     source_url: Optional[str] = None
     source_price_cny: Optional[float] = None
     status: str = "active"
+    image_url: Optional[str] = None
 
 
 @router.post("/products", status_code=201)
@@ -254,8 +256,19 @@ def create_product(
     db: Session = Depends(get_db),
     admin: Admin = Depends(get_current_admin),
 ):
-    product = Product(**body.model_dump())
+    from app.core.models import ProductMedia, MediaKind
+    data = body.model_dump()
+    image_url = data.pop("image_url", None)
+    product = Product(**data)
     db.add(product)
+    db.flush()
+    if image_url:
+        db.add(ProductMedia(
+            product_id=product.id,
+            url=image_url,
+            kind=MediaKind.gallery,
+            sort_order=0
+        ))
     db.commit()
     db.refresh(product)
     return {"id": product.id}
@@ -267,11 +280,24 @@ def update_product(
     db: Session = Depends(get_db),
     admin: Admin = Depends(get_current_admin),
 ):
+    from app.core.models import ProductMedia, MediaKind
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    for k, v in body.model_dump(exclude_unset=True).items():
+    data = body.model_dump(exclude_unset=True)
+    image_url = data.pop("image_url", None)
+    for k, v in data.items():
         setattr(product, k, v)
+    if image_url is not None:
+        if product.media:
+            product.media[0].url = image_url
+        else:
+            db.add(ProductMedia(
+                product_id=product.id,
+                url=image_url,
+                kind=MediaKind.gallery,
+                sort_order=0
+            ))
     db.commit()
     return {"detail": "Updated"}
 
@@ -373,3 +399,136 @@ def dashboard(db: Session = Depends(get_db), admin: Admin = Depends(get_current_
         "pending_payment_reviews": pending_reviews,
         "total_users": db.query(func.count(User.id)).scalar(),
     }
+
+
+# ─── Categories / Catalog ───────────────────────────────────────────────────
+
+class CategoryIn(BaseModel):
+    parent_id: Optional[int] = None
+    name_i18n: dict  # {"ru": "...", "uz": "...", "en": "..."}
+    slug: str
+    icon: Optional[str] = "📦"
+    sort_order: int = 0
+    is_active: bool = True
+
+
+@router.get("/categories")
+def admin_list_categories(db: Session = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+    return db.query(Category).order_by(Category.sort_order).all()
+
+
+@router.post("/categories", status_code=201)
+def admin_create_category(
+    body: CategoryIn,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    existing = db.query(Category).filter(Category.slug == body.slug).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Category with this slug already exists")
+    cat = Category(**body.model_dump())
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+
+@router.patch("/categories/{cat_id}")
+def admin_update_category(
+    cat_id: int,
+    body: CategoryIn,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    cat = db.query(Category).filter(Category.id == cat_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    for k, v in body.model_dump(exclude_unset=True).items():
+        setattr(cat, k, v)
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+
+@router.delete("/categories/{cat_id}")
+def admin_delete_category(
+    cat_id: int,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    cat = db.query(Category).filter(Category.id == cat_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    cat.is_active = not cat.is_active
+    db.commit()
+    return {"detail": "Status toggled", "is_active": cat.is_active}
+
+
+# ─── Users Management ─────────────────────────────────────────────────────────
+
+class UpdateUserRequest(BaseModel):
+    is_blocked: Optional[bool] = None
+    internal_note: Optional[str] = None
+
+
+@router.get("/users")
+def admin_list_users(
+    search: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    q = db.query(User)
+    if search:
+        term = f"%{search}%"
+        q = q.filter(
+            (User.username.ilike(term)) |
+            (User.first_name.ilike(term)) |
+            (User.last_name.ilike(term)) |
+            (User.phone.ilike(term)) |
+            (cast(User.telegram_id, String).ilike(term))
+        )
+    users = q.order_by(User.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+
+    result = []
+    for u in users:
+        orders = db.query(Order).filter(Order.user_id == u.id).all()
+        spent = sum(
+            float(o.total) for o in orders
+            if o.status in [OrderStatus.approved, OrderStatus.purchasing, OrderStatus.warehouse, OrderStatus.shipping, OrderStatus.delivered]
+        )
+        result.append({
+            "id": u.id,
+            "telegram_id": u.telegram_id,
+            "username": u.username,
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+            "language": u.language,
+            "phone": u.phone,
+            "is_blocked": u.is_blocked,
+            "internal_note": u.internal_note,
+            "created_at": u.created_at,
+            "last_seen_at": u.last_seen_at,
+            "orders_count": len(orders),
+            "total_spent": spent,
+        })
+    return result
+
+
+@router.patch("/users/{user_id}")
+def admin_update_user(
+    user_id: int,
+    body: UpdateUserRequest,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    if body.is_blocked is not None:
+        u.is_blocked = body.is_blocked
+    if body.internal_note is not None:
+        u.internal_note = body.internal_note
+    db.commit()
+    return {"detail": "User updated", "is_blocked": u.is_blocked, "internal_note": u.internal_note}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '../api/client';
+import { useStore } from '../store';
 
 const STATUS_COLORS: Record<string, string> = {
   pending_payment:  'var(--warning)',
@@ -23,6 +24,8 @@ const STATUS_ICONS: Record<string, string> = {
 
 export default function HistoryPage() {
   const navigate = useNavigate();
+  const lang = useStore((s) => s.lang);
+  const t = useStore((s) => s.t);
 
   const { data: rawOrders, isLoading } = useQuery({
     queryKey: ['orders'],
@@ -35,7 +38,7 @@ export default function HistoryPage() {
   return (
     <div className="fade-in">
       <div className="page-header">
-        <span className="page-title">📦 My Orders</span>
+        <span className="page-title">{t('orders_title')}</span>
       </div>
 
       {isLoading ? (
@@ -50,9 +53,9 @@ export default function HistoryPage() {
       ) : orders.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state__icon">📦</div>
-          <div className="empty-state__title">No orders yet</div>
-          <div className="empty-state__desc">Your orders will appear here</div>
-          <button className="btn btn-primary" onClick={() => navigate('/')}>Shop Now</button>
+          <div className="empty-state__title">{t('no_orders')}</div>
+          <div className="empty-state__desc">{t('try_another_search')}</div>
+          <button className="btn btn-primary" onClick={() => navigate('/')}>{t('browse_catalog')}</button>
         </div>
       ) : (
         <div style={{ padding: '0 16px' }}>
@@ -65,7 +68,7 @@ export default function HistoryPage() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 15 }}>Order #{order.number}</div>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{t('order_num')}{order.number}</div>
                   <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
                     {new Date(order.created_at).toLocaleDateString()}
                   </div>
@@ -77,7 +80,7 @@ export default function HistoryPage() {
                     color: STATUS_COLORS[order.status],
                   }}
                 >
-                  {STATUS_ICONS[order.status]} {order.status.replace(/_/g, ' ')}
+                  {STATUS_ICONS[order.status]} {t(`status_${order.status}`) || order.status.replace(/_/g, ' ')}
                 </div>
               </div>
 

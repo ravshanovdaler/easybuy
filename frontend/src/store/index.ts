@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { translations, Lang } from '../utils/i18n';
 
 interface CartItem {
   id: number;
@@ -20,7 +21,7 @@ interface AppStore {
   // Language
   lang: string;
   setLang: (l: string) => void;
-  t: (key: Record<string, string>) => string;
+  t: (key: string | Record<string, string> | undefined | null) => string;
 
   // Auth
   isAuthed: boolean;
@@ -51,8 +52,16 @@ export const useStore = create<AppStore>((set, get) => ({
     set({ lang: l });
   },
   t: (key) => {
+    if (!key) return '';
     const { lang } = get();
-    return key[lang] || key['ru'] || key['en'] || Object.values(key)[0] || '';
+    if (typeof key === 'string') {
+      const entry = translations[key];
+      if (entry) {
+        return entry[lang as Lang] || entry['ru'] || entry['en'] || key;
+      }
+      return key;
+    }
+    return key[lang] || key['ru'] || key['uz'] || key['en'] || Object.values(key)[0] || '';
   },
 
   // Auth

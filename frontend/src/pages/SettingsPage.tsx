@@ -7,6 +7,7 @@ export default function SettingsPage() {
   const qc = useQueryClient();
   const lang = useStore((s) => s.lang);
   const setLang = useStore((s) => s.setLang);
+  const t = useStore((s) => s.t);
   const addToast = useStore((s) => s.addToast);
 
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -48,12 +49,12 @@ export default function SettingsPage() {
   return (
     <div className="fade-in" style={{ paddingBottom: 40 }}>
       <div className="page-header">
-        <span className="page-title">⚙️ Settings</span>
+        <span className="page-title">{t('settings_title')}</span>
       </div>
 
       {/* Profile */}
       <div className="section">
-        <div className="section-title">Profile</div>
+        <div className="section-title">{t('profile')}</div>
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div
@@ -82,11 +83,12 @@ export default function SettingsPage() {
 
       {/* Language */}
       <div className="section">
-        <div className="section-title">Language</div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="section-title">{t('language')}</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {[
-            { code: 'ru', label: '🇷🇺 Русский' },
-            { code: 'uz', label: '🇺🇿 O\'zbek' },
+            { code: 'ru', label: t('lang_ru') },
+            { code: 'uz', label: t('lang_uz') },
+            { code: 'en', label: t('lang_en') },
           ].map(({ code, label }) => (
             <button
               key={code}
@@ -105,50 +107,50 @@ export default function SettingsPage() {
       {/* Addresses */}
       <div className="section">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div className="section-title" style={{ marginBottom: 0 }}>Delivery Addresses</div>
+          <div className="section-title" style={{ marginBottom: 0 }}>{t('delivery_addresses')}</div>
           <button className="btn btn-sm btn-secondary" onClick={() => setShowAddAddress(!showAddAddress)}>
-            {showAddAddress ? '✕' : '+ Add'}
+            {showAddAddress ? '✕' : t('add_address')}
           </button>
         </div>
 
         {showAddAddress && (
           <div className="card" style={{ marginBottom: 12 }}>
             <div className="form-group">
-              <label className="form-label">Recipient name *</label>
+              <label className="form-label">{t('recipient')} *</label>
               <input className="form-input" value={newAddr.recipient}
                 onChange={(e) => setNewAddr({ ...newAddr, recipient: e.target.value })}
                 placeholder="Full name" />
             </div>
             <div className="form-group">
-              <label className="form-label">Phone *</label>
+              <label className="form-label">{t('phone')} *</label>
               <input className="form-input" value={newAddr.phone}
                 onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
                 placeholder="+998 90 000 0000" type="tel" />
             </div>
             <div className="form-group">
-              <label className="form-label">City *</label>
+              <label className="form-label">{t('city')} *</label>
               <input className="form-input" value={newAddr.city}
                 onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
                 placeholder="Tashkent" />
             </div>
             <div className="form-group">
-              <label className="form-label">Street / Address *</label>
+              <label className="form-label">{t('street')} *</label>
               <input className="form-input" value={newAddr.street}
                 onChange={(e) => setNewAddr({ ...newAddr, street: e.target.value })}
                 placeholder="Street, building, apt" />
             </div>
             <div className="form-group">
-              <label className="form-label">Region</label>
-              <input className="form-input" value={newAddr.region}
-                onChange={(e) => setNewAddr({ ...newAddr, region: e.target.value })}
-                placeholder="Region (optional)" />
+              <label className="form-label">{t('postal_code')}</label>
+              <input className="form-input" value={newAddr.postal_code}
+                onChange={(e) => setNewAddr({ ...newAddr, postal_code: e.target.value })}
+                placeholder="Postal code" />
             </div>
             <button
               className="btn btn-primary btn-full"
               onClick={() => addAddrMutation.mutate()}
               disabled={!newAddr.recipient || !newAddr.phone || !newAddr.city || !newAddr.street || addAddrMutation.isPending}
             >
-              {addAddrMutation.isPending ? 'Saving...' : 'Save Address'}
+              {addAddrMutation.isPending ? '...' : t('save')}
             </button>
           </div>
         )}

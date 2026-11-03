@@ -8,6 +8,7 @@ export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const lang = useStore((s) => s.lang);
   const t = useStore((s) => s.t);
   const setCart = useStore((s) => s.setCart);
   const addToast = useStore((s) => s.addToast);
@@ -45,10 +46,10 @@ export default function ProductPage() {
     onSuccess: async () => {
       const cart = await cartApi.getCart();
       setCart(cart);
-      addToast('success', 'Added to cart!');
+      addToast('success', t('added_to_cart'));
       window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
     },
-    onError: () => addToast('error', 'Failed to add to cart'),
+    onError: () => addToast('error', t('failed_add_cart')),
   });
 
   function resolveVariant(): number | undefined {
@@ -124,7 +125,7 @@ export default function ProductPage() {
             style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', color: 'white' }}
             onClick={() => navigate(-1)}
           >
-            ← Back
+            {t('back')}
           </button>
           <button
             className="btn btn-sm"
@@ -147,7 +148,7 @@ export default function ProductPage() {
           </span>
           {product.shipping_fee > 0 && (
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              + ${Number(product.shipping_fee).toFixed(2)} shipping
+              + ${Number(product.shipping_fee).toFixed(2)} {t('shipping')}
             </span>
           )}
         </div>
@@ -183,7 +184,7 @@ export default function ProductPage() {
         {/* Description */}
         {product.description_i18n && (
           <div style={{ marginBottom: 20 }}>
-            <div className="section-title">Description</div>
+            <div className="section-title">{t('description')}</div>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
               {t(product.description_i18n)}
             </p>
@@ -238,7 +239,7 @@ export default function ProductPage() {
           {addToCartMutation.isPending ? (
             <span className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
           ) : (
-            '🛒 Add to Cart — $' + getPrice().toFixed(2)
+            `🛒 ${t('add_to_cart')} — $${getPrice().toFixed(2)}`
           )}
         </button>
       </div>

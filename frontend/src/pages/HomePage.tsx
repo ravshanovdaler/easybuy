@@ -18,6 +18,7 @@ function ProductSkeleton() {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const lang = useStore((s) => s.lang);
   const t = useStore((s) => s.t);
   const [selectedCat, setSelectedCat] = useState<number | null>(null);
   const [search, setSearch] = useState('');
@@ -58,7 +59,7 @@ export default function HomePage() {
           onClick={() => navigate('/how-it-works')}
           style={{ fontSize: 12 }}
         >
-          How it works ❓
+          {t('how_it_works')}
         </button>
       </div>
 
@@ -72,7 +73,7 @@ export default function HomePage() {
           color: '#f87171',
           fontSize: '13px'
         }}>
-          <strong>⚠️ Backend Not Connected</strong>
+          <strong>⚠️ {t('backend_not_connected')}</strong>
           <p style={{ margin: '4px 0 0', opacity: 0.85 }}>
             {(error as any)?.message || 'Unable to connect to the backend API. Please ensure your PythonAnywhere server is running and VITE_API_URL is configured.'}
           </p>
@@ -84,7 +85,7 @@ export default function HomePage() {
         <span className="search-icon">🔍</span>
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder={t('search_placeholder')}
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
         />
@@ -96,7 +97,7 @@ export default function HomePage() {
           className={`chip ${selectedCat === null ? 'active' : ''}`}
           onClick={() => setSelectedCat(null)}
         >
-          All
+          {t('all_categories')}
         </button>
         {categories.map((cat: any) => (
           <button
@@ -155,8 +156,8 @@ export default function HomePage() {
       {!isLoading && !isApiError && products.length === 0 && (
         <div className="empty-state">
           <div className="empty-state__icon">🔍</div>
-          <div className="empty-state__title">No products found</div>
-          <div className="empty-state__desc">Try a different category or search term</div>
+          <div className="empty-state__title">{t('no_products')}</div>
+          <div className="empty-state__desc">{t('try_another_search')}</div>
         </div>
       )}
 
