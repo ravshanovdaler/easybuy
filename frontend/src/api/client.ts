@@ -11,8 +11,8 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const isAdminReq = config.url?.includes('/admin') && !config.url?.includes('/admin/login');
   const token = isAdminReq
-    ? localStorage.getItem('admin_access_token') || localStorage.getItem('access_token')
-    : localStorage.getItem('access_token');
+      ? localStorage.getItem('admin_access_token')
+      : localStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -31,30 +31,31 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    // If request was to admin endpoints, do not attempt Telegram auth
+    // If request was to admin endpoints, handle 401 specifically
     if (error.config?.url?.includes('/admin')) {
+        if (error.response?.status === 401 && !error.config.url.includes('/admin/login')) {
+          localStorage.removeItem('admin_access_token');
+          window.dispatchEvent(new Event('admin_auth_expired'));
+        }
+        return Promise.reject(error);
+      }
+
       if (error.response?.status === 401) {
-        localStorage.removeItem('admin_access_token');
+        // Re-authenticate with Telegram initData
+        const initData = window.Telegram?.WebApp?.initData;
+        if (initData) {
+          try {
+            const res = await axios.post(`${BASE_URL}/auth/telegram`, { init_data: initData });
+            localStorage.setItem('access_token', res.data.access_token);
+            error.config.headers.Authorization = `Bearer ${res.data.access_token}`;
+            return api.request(error.config);
+          } catch (_) {
+            localStorage.removeItem('access_token');
+          }
+        }
       }
       return Promise.reject(error);
     }
-
-    if (error.response?.status === 401) {
-      // Re-authenticate with Telegram initData
-      const initData = window.Telegram?.WebApp?.initData;
-      if (initData) {
-        try {
-          const res = await axios.post(`${BASE_URL}/auth/telegram`, { init_data: initData });
-          localStorage.setItem('access_token', res.data.access_token);
-          error.config.headers.Authorization = `Bearer ${res.data.access_token}`;
-          return api.request(error.config);
-        } catch (_) {
-          localStorage.removeItem('access_token');
-        }
-      }
-    }
-    return Promise.reject(error);
-  }
 );
 
 // ─── Auth ────────────────────────────────────────────────────────────────────

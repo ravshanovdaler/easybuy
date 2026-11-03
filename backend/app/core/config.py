@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # JWT
     JWT_SECRET: str = "change-me"
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 60
+    JWT_EXPIRE_MINUTES: int = 60 * 24 * 30  # 30 days
 
     # Admin
     FIRST_ADMIN_EMAIL: str = "admin@easybuy.com"

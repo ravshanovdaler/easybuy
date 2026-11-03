@@ -1,5 +1,5 @@
 """Admin API router: orders, products, payments, users, settings"""
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from pydantic import BaseModel
@@ -38,7 +38,7 @@ def admin_login(body: AdminLoginRequest, db: Session = Depends(get_db)):
     admin = db.query(Admin).filter(Admin.email == body.email, Admin.is_active == True).first()
     if not admin or not verify_password(body.password, admin.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_access_token({"sub": str(admin.id), "type": "admin"})
+    token = create_access_token({"sub": str(admin.id), "type": "admin"}, expires_delta=timedelta(days=30))
     return AdminTokenResponse(access_token=token)
 
 

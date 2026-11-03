@@ -6,15 +6,15 @@ import { authApi, cartApi } from './api/client';
 import './index.css';
 
 // Lazy-loaded pages for code splitting
-const HomePage        = lazy(() => import('./pages/HomePage'));
-const HowItWorksPage  = lazy(() => import('./pages/HowItWorksPage'));
-const ProductPage     = lazy(() => import('./pages/ProductPage'));
-const CartPage        = lazy(() => import('./pages/CartPage'));
-const HistoryPage     = lazy(() => import('./pages/HistoryPage'));
+const HomePage = lazy(() => import('./pages/HomePage'));
+const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const OrderStatusPage = lazy(() => import('./pages/OrderStatusPage'));
-const PaymentPage     = lazy(() => import('./pages/PaymentPage'));
-const SettingsPage    = lazy(() => import('./pages/SettingsPage'));
-const AdminPage       = lazy(() => import('./pages/AdminPage'));
+const PaymentPage = lazy(() => import('./pages/PaymentPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,26 +101,26 @@ function AppBootstrap({ children }: { children: React.ReactNode }) {
 
     const doAuth = async () => {
       const initData = tg?.initData || '';
-      if (!initData && import.meta.env.DEV) {
-        // In dev, skip Telegram auth
-        return;
-      }
-      try {
-        const res = await authApi.loginTelegram(initData);
-        localStorage.setItem('access_token', res.access_token);
-        setAuth(res.user_id);
-        setLang(res.language || 'ru');
+        if (!initData) {
+          // When opening in regular browser or without Telegram initData, skip Telegram auth
+          return;
+        }
+        try {
+          const res = await authApi.loginTelegram(initData);
+          localStorage.setItem('access_token', res.access_token);
+          setAuth(res.user_id);
+          setLang(res.language || 'ru');
 
-        // Load cart
-        const cart = await cartApi.getCart();
-        setCart(cart);
-      } catch (e) {
-        console.error('Auth failed', e);
-      }
-    };
+          // Load cart
+          const cart = await cartApi.getCart();
+          setCart(cart);
+        } catch (e) {
+          console.error('Auth failed', e);
+        }
+      };
 
-    doAuth();
-  }, []);
+      doAuth();
+    }, []);
 
   return <>{children}</>;
 }
