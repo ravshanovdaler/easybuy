@@ -286,24 +286,15 @@ export default function AdminPage() {
       const res = await adminApi.createProduct({
         category_id: newProduct.category_id ? parseInt(newProduct.category_id) : null,
         title_i18n: {
-          ru: newProduct.title_ru,
-          uz: newProduct.title_uz || newProduct.title_ru,
-          en: newProduct.title_en || newProduct.title_ru,
           ru: titleRu,
           uz: titleUz || titleRu,
           en: titleEn || titleRu,
-        },
-        description_i18n: {
-          ru: newProduct.description_ru,
-          uz: newProduct.description_uz || newProduct.description_ru,
-          en: newProduct.description_en || newProduct.description_ru,
         },
         description_i18n,
         base_price: parseFloat(newProduct.base_price),
         shipping_fee: parseFloat(newProduct.shipping_fee || '0'),
         currency: 'USD',
         source_platform: newProduct.source_platform,
-        source_url: newProduct.source_url || null,
         source_url: newProduct.source_url.trim() || null,
         status: 'active',
         image_url: newProduct.image_url.trim() || undefined,
@@ -1339,14 +1330,9 @@ export default function AdminPage() {
                 <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setShowAddProductModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary">
-                  Create Product
-                  <button type="submit" className="admin-btn admin-btn-primary" disabled={isCreatingProduct}>
-                    {isCreatingProduct ? 'Creating...' : 'Create Product'}
-                  </button>
-                  <button type="submit" className="admin-btn admin-btn-primary" disabled={isCreatingProduct}>
-                    {isCreatingProduct ? 'Creating...' : 'Create Product'}
-                  </button>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={isCreatingProduct}>
+                  {isCreatingProduct ? 'Creating...' : 'Create Product'}
+                </button>
               </div>
             </form>
           </div>
