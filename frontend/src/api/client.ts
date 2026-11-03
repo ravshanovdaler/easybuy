@@ -9,7 +9,10 @@ export const api = axios.create({
 
 // Attach JWT token from localStorage to every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const isAdminReq = config.url?.includes('/admin') && !config.url?.includes('/admin/login');
+  const token = isAdminReq
+    ? localStorage.getItem('admin_access_token') || localStorage.getItem('access_token')
+    : localStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -28,6 +31,14 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
+    // If request was to admin endpoints, do not attempt Telegram auth
+    if (error.config?.url?.includes('/admin')) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('admin_access_token');
+      }
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401) {
       // Re-authenticate with Telegram initData
       const initData = window.Telegram?.WebApp?.initData;
@@ -104,4 +115,35 @@ export const usersApi = {
   createAddress: (data: Record<string, unknown>) =>
     api.post('/users/me/addresses', data).then((r) => r.data),
   deleteAddress: (id: number) => api.delete(`/users/me/addresses/${id}`),
+};
+
+// ─── Admin ───────────────────────────────────────────────────────────────────
+export const adminApi = {
+  login: (data: { email: string; password: string }) =>
+    api.post('/admin/login', data).then((r) => r.data),
+  getDashboard: () => api.get('/admin/dashboard').then((r) => r.data),
+  getOrders: (params?: { status?: string; search?: string; page?: number; limit?: number }) =>
+    api.get('/admin/orders', { params }).then((r) => r.data),
+  getOrder: (id: number) => api.get(`/admin/orders/${id}`).then((r) => r.data),
+  changeOrderStatus: (orderId: number, data: { to_status: string; comment?: string; tracking_number?: string }) =>
+    api.patch(`/admin/orders/${orderId}/status`, data).then((r) => r.data),
+  getPaymentReviews: () => api.get('/admin/payment-review').then((r) => r.data),
+  decidePayment: (paymentId: number, data: { decision: 'approve' | 'reject'; reason?: string }) =>
+    api.post(`/admin/payments/${paymentId}/decision`, data).then((r) => r.data),
+  getSettings: () => api.get('/admin/settings').then((r) => r.data),
+  updateSettings: (data: Record<string, unknown>) =>
+    api.put('/admin/settings', data).then((r) => r.data),
+  createProduct: (data: Record<string, unknown>) =>
+    api.post('/admin/products', data).then((r) => r.data),
+  updateProduct: (id: number, data: Record<string, unknown>) =>
+    api.patch(`/admin/products/${id}`, data).then((r) => r.data),
+  setBulkProductStatus: (product_ids: number[], new_status: string) =>
+    api.post('/admin/products/bulk-status', { product_ids, new_status }).then((r) => r.data),
+  uploadProductMedia: (productId: number, file: File, kind = 'gallery') => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post(`/admin/products/${productId}/media?kind=${kind}`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data);
+  },
 };

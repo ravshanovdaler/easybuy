@@ -120,6 +120,35 @@ def admin_change_order_status(
     return {"detail": "Status updated"}
 
 
+@router.get("/orders/{order_id}")
+def admin_get_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    from app.modules.orders.router import _order_to_out
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    out = _order_to_out(order).model_dump()
+    out["user"] = {
+        "id": order.user.id,
+        "telegram_id": order.user.telegram_id,
+        "username": order.user.username,
+        "first_name": order.user.first_name,
+        "last_name": order.user.last_name,
+        "phone": order.user.phone,
+    } if order.user else None
+    if order.payment:
+        out["payment"] = {
+            "id": order.payment.id,
+            "status": order.payment.status.value,
+            "amount": float(order.payment.amount),
+            "proofs": [get_file_url(p.file_key) for p in order.payment.proofs],
+        }
+    return out
+
+
 # ─── Payment Review ───────────────────────────────────────────────────────────
 
 class PaymentReviewOut(BaseModel):

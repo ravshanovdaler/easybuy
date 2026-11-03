@@ -14,6 +14,7 @@ const HistoryPage     = lazy(() => import('./pages/HistoryPage'));
 const OrderStatusPage = lazy(() => import('./pages/OrderStatusPage'));
 const PaymentPage     = lazy(() => import('./pages/PaymentPage'));
 const SettingsPage    = lazy(() => import('./pages/SettingsPage'));
+const AdminPage       = lazy(() => import('./pages/AdminPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +28,7 @@ function BottomNav() {
   const navigate = useNavigate();
   const cartCount = useStore((s) => s.cartCount);
 
-  const noNav = ['/how-it-works', '/product/', '/payment/', '/order/'].some(
+  const noNav = ['/how-it-works', '/product/', '/payment/', '/order/', '/admin'].some(
     (p) => location.pathname.startsWith(p)
   );
   if (noNav) return null;
@@ -140,6 +141,8 @@ export default function App() {
                 <Route path="/order/:id" element={<OrderStatusPage />} />
                 <Route path="/payment/:id" element={<PaymentPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/admin/*" element={<AdminPage />} />
+                <Route path="/admin" element={<AdminPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
