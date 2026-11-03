@@ -141,14 +141,28 @@ In BotFather:
 
 ---
 
-## 🔑 Admin Panel Access
+## 🔑 Admin Panel & Superuser Management
 
+### Creating or Resetting an Admin Account on PythonAnywhere:
+In your PythonAnywhere **Bash console**:
+```bash
+cd ~/easybuy/backend
+source venv/bin/activate
+python create_admin.py
+```
+Follow the interactive prompts to set email and password, or pass arguments:
+```bash
+python create_admin.py --email admin@example.com --password YourPasswordHere --role owner
+```
+> *Note: Roles are `owner` (full superuser privileges) and `manager`.*
+
+### Accessing the Admin API:
 The API includes a REST admin interface:
 - Login: `POST /api/v1/admin/login` with `{"email": "...", "password": "..."}`
 - Dashboard: `GET /api/v1/admin/dashboard`
 - Orders: `GET /api/v1/admin/orders`
 - Payment review: `GET /api/v1/admin/payment-review`
-- API docs: `https://yourusername.pythonanywhere.com/api/docs`
+- Interactive Swagger UI: `https://yourusername.pythonanywhere.com/api/docs`
 
 Use any REST client (Postman, Insomnia, or the Swagger UI at `/api/docs`).
 

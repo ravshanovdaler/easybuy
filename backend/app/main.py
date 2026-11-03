@@ -52,7 +52,7 @@ def seed_initial_data():
             "payment_deadline_hours": 24,
             "display_currency": "USD",
             "brand_name": "EasyBuy",
-            "support_link": "https://t.me/yoursupport",
+            "support_link": "https://t.me/dalerravshanov",
             "admin_group_chat_id": None,
         }
         for key, value in default_settings.items():
